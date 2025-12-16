@@ -57,10 +57,10 @@ This project implements a crypto payment checkout flow that can be embedded on a
 
 ```bash
 # Clone the repository
-git clone [your-repo-url]
+git clone https://github.com/hackib-dev/novacrust-assessment.git
 
 # Navigate to project directory
-cd novacrust-labs
+cd novacrust-assessment
 
 # Install dependencies
 yarn
