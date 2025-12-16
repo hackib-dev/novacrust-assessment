@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
 import Image from 'next/image';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -32,14 +32,50 @@ export function CurrencyInput({
 }: CurrencyInputProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [inputValue, setInputValue] = useState(value.toFixed(2));
+  const [isFocused, setIsFocused] = useState(false);
 
   const selectedCurrency = currencies.find((c) => c.code === currency);
+
+  useEffect(() => {
+    if (!isFocused) {
+      setInputValue(value.toFixed(2));
+    }
+  }, [value, isFocused]);
 
   const filteredCurrencies = currencies.filter(
     (c) =>
       c.name.toLowerCase().includes(search.toLowerCase()) ||
       c.code.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+
+    if (newValue === '' || /^\d*\.?\d*$/.test(newValue)) {
+      setInputValue(newValue);
+
+      const numValue = newValue === '' ? 0 : parseFloat(newValue);
+      if (!isNaN(numValue)) {
+        onValueChange(numValue);
+      } else if (newValue === '') {
+        onValueChange(0);
+      }
+    }
+  };
+
+  const handleFocus = () => {
+    setIsFocused(true);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    // Format to 2 decimals on blur
+    const numValue = inputValue === '' ? 0 : parseFloat(inputValue);
+    if (!isNaN(numValue)) {
+      setInputValue(numValue.toFixed(2));
+    }
+  };
 
   const renderCurrencyIcon = (curr: Currency) => {
     const isImagePath = curr.icon.startsWith('/');
@@ -66,16 +102,18 @@ export function CurrencyInput({
 
         <div className="flex items-center justify-between gap-3 md:gap-4">
           <input
-            type="number"
-            value={value.toFixed(2)}
-            onChange={(e) => onValueChange(parseFloat(e.target.value) || 0)}
+            type="text"
+            inputMode="decimal"
+            value={inputValue}
+            onChange={handleInputChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             readOnly={readOnly}
             className={cn(
               'text-2xl md:text-3xl font-semibold bg-transparent border-none outline-none flex-1 min-w-0',
               readOnly && 'cursor-not-allowed'
             )}
             placeholder="0.00"
-            step="0.01"
           />
 
           <Popover open={open} onOpenChange={setOpen}>
